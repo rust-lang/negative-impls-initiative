@@ -1,4 +1,5 @@
-# {{INITIATIVE_NAME}} initiative
+# negative impls initiative
+
 <!--
 
  This is the template for creating an initiative in rust-lang. Be sure to go
@@ -34,7 +35,7 @@ https://github.com/rust-lang/infra-team/issues/new
 
 ## What is this?
 
-This page tracks the work of the {{INITIATIVE_NAME}} [initiative]! To learn more about what we are trying to do, and to find out the people who are doing it, take a look at the [charter]. 
+This page tracks the work of the negative-impls [initiative]! To learn more about what we are trying to do, and to find out the people who are doing it, take a look at the [charter]. 
 
 [charter]: ./CHARTER.md
 [initiative]: https://lang-team.rust-lang.org/initiatives.html
@@ -45,9 +46,9 @@ The following table lists of the stages of an initiative, along with links to th
 
 | Stage                                 | State | Artifact(s) |
 | ------------------------------------- | ----- | ----------- |
-| [Proposal]                            | ✅    | [Proposal issue](https://github.com/rust-lang/lang-team/) |
+| [Proposal]                            | ✅    | [Proposal issue](https://github.com/rust-lang/lang-team/issues/96) |
 |                                       |       | [Charter](./CHARTER.md) |
-|                                       |       | [Tracking issue](https://github.com/rust-lang/rust/) |
+|                                       |       | [Tracking issue](https://github.com/rust-lang/rust/issues/68318) |
 | [Experimental]                        | 🦀    | [Evaluation](./evaluation.md) |
 |                                       |       | [RFC](./RFC.md) |
 | [Development]                         | 💤    | [Explainer](./explainer.md) | 
