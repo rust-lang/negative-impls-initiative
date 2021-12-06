@@ -76,7 +76,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item "><a href="index.html">👋 Welcome</a></li><li class="chapter-item "><a href="updates.html">✏️ Updates</a></li><li class="chapter-item "><a href="CHARTER.html">📜 Charter</a></li><li class="chapter-item "><a href="evaluation.html">🔬 Evaluation</a></li><li class="chapter-item "><a href="explainer.html">📚 Explainer</a></li><li class="chapter-item "><a href="RFC.html">✨ RFC</a></li><li class="chapter-item "><a href="FAQ.html">😕 FAQ</a></li></ol>
+                <ol class="chapter"><li class="chapter-item "><a href="index.html">👋 Welcome</a></li><li class="chapter-item "><a href="updates.html">✏️ Updates</a></li><li class="chapter-item "><a href="CHARTER.html">📜 Charter</a></li><li class="chapter-item "><a href="evaluation.html">🔬 Evaluation</a></li><li class="chapter-item "><a href="explainer.html">📚 Explainer</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="explainer/always-applicable.html">Always applicable impls</a></li></ol></li><li class="chapter-item "><a href="RFC.html">✨ RFC</a></li><li class="chapter-item "><a href="FAQ.html">😕 FAQ</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -138,7 +138,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="initiative_name-initiative"><a class="header" href="#initiative_name-initiative">{{INITIATIVE_NAME}} initiative</a></h1>
+                        <h1 id="negative-impls-initiative"><a class="header" href="#negative-impls-initiative">negative impls initiative</a></h1>
 <!--
 
  This is the template for creating an initiative in rust-lang. Be sure to go
@@ -171,13 +171,13 @@ https://github.com/rust-lang/infra-team/issues/new
 -->
 <p><img src="https://img.shields.io/badge/status-active-brightgreen.svg" alt="initiative status: active" /></p>
 <h2 id="what-is-this"><a class="header" href="#what-is-this">What is this?</a></h2>
-<p>This page tracks the work of the {{INITIATIVE_NAME}} <a href="https://lang-team.rust-lang.org/initiatives.html">initiative</a>! To learn more about what we are trying to do, and to find out the people who are doing it, take a look at the <a href="./CHARTER.html">charter</a>. </p>
+<p>This page tracks the work of the negative-impls <a href="https://lang-team.rust-lang.org/initiatives.html">initiative</a>! To learn more about what we are trying to do, and to find out the people who are doing it, take a look at the <a href="./CHARTER.html">charter</a>. </p>
 <h2 id="current-status"><a class="header" href="#current-status">Current status</a></h2>
 <p>The following table lists of the stages of an initiative, along with links to the artifacts that will be produced during that stage.</p>
 <table><thead><tr><th>Stage</th><th>State</th><th>Artifact(s)</th></tr></thead><tbody>
-<tr><td><a href="https://lang-team.rust-lang.org/initiatives/process/stages/proposal.html">Proposal</a></td><td>✅</td><td><a href="https://github.com/rust-lang/lang-team/">Proposal issue</a></td></tr>
+<tr><td><a href="https://lang-team.rust-lang.org/initiatives/process/stages/proposal.html">Proposal</a></td><td>✅</td><td><a href="https://github.com/rust-lang/lang-team/issues/96">Proposal issue</a></td></tr>
 <tr><td></td><td></td><td><a href="./CHARTER.html">Charter</a></td></tr>
-<tr><td></td><td></td><td><a href="https://github.com/rust-lang/rust/">Tracking issue</a></td></tr>
+<tr><td></td><td></td><td><a href="https://github.com/rust-lang/rust/issues/68318">Tracking issue</a></td></tr>
 <tr><td><a href="https://lang-team.rust-lang.org/initiatives/process/stages/proposal.html">Experimental</a></td><td>🦀</td><td><a href="./evaluation.html">Evaluation</a></td></tr>
 <tr><td></td><td></td><td><a href="./RFC.html">RFC</a></td></tr>
 <tr><td><a href="https://lang-team.rust-lang.org/initiatives/process/stages/development.html">Development</a></td><td>💤</td><td><a href="./explainer.html">Explainer</a></td></tr>
@@ -240,12 +240,99 @@ It is not required for all initiatives, only those that begin with a problem sta
 but without a clear picture of the best solution. Often the evaluation will refer to topics
 in the <a href="./design-discussions.html">design-discussions</a> for more detailed consideration.</p>
 </blockquote>
+<h2 id=""><a class="header" href="#"></a></h2>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="-explainer"><a class="header" href="#-explainer">📚 Explainer</a></h1>
 <blockquote>
 <p>The &quot;explainer&quot; is &quot;end-user readable&quot; documentation that explains how to use the feature being deveoped by this initiative.
 If you want to experiment with the feature, you've come to the right place.
 Until the feature enters &quot;feature complete&quot; form, the explainer should be considered a work-in-progress.</p>
 </blockquote>
+<h2 id="negative-impls-a-promise-not-to-do-something"><a class="header" href="#negative-impls-a-promise-not-to-do-something">Negative impls: a promise NOT to do something</a></h2>
+<p>By now you are probably familiar with trait impls in Rust:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// In version 1.0 of the crate `uint`:
+trait UnsignedInt {
+    fn increment(&amp;mut self);
+}
+
+impl UnsignedInt for u16 { 
+    fn increment(&amp;mut self) {
+        *self += 1;
+    }
+}
+
+impl UnsignedInt for u32 { 
+    fn increment(&amp;mut self) {
+        *self += 1;
+    }
+}
+
+impl UnsignedInt for u64 { 
+    fn increment(&amp;mut self) {
+        *self += 1;
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h3 id="impls-are-forever"><a class="header" href="#impls-are-forever">Impls are forever</a></h3>
+<p>Of course, a trait implementation provides the definition of a trait's methods, but it also provides a semver promise: future releases of the same crate cannot remove an implementation without a major version bump.</p>
+<h3 id="minor-versions-can-add-new-impls"><a class="header" href="#minor-versions-can-add-new-impls">Minor versions can add new impls</a></h3>
+<p>It is, however, legal for crates to add a <strong>new</strong> implementation in a minor version (with some caveats<sup class="footnote-reference"><a href="#blanket">1</a></sup>). So, if we had the trait above, one could add an impl for <code>u8</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// In version 1.1 of the crate `uint`:
+
+impl UnsignedInt for u8 {
+    fn increment(&amp;mut self) {
+        *self += 1;
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<div class="footnote-definition" id="blanket"><sup class="footnote-definition-label">1</sup>
+<p>It is not permitted to add a <em>blanket impl</em> in a minor version. See <a href="https://rust-lang.github.io/rfcs/2451-re-rebalancing-coherence.html">RFC 2451</a> for more details.</p>
+</div>
+<h3 id="implication-downstream-crates-cannot-rely-on-something-not-being-implemented"><a class="header" href="#implication-downstream-crates-cannot-rely-on-something-not-being-implemented">Implication: Downstream crates cannot rely on something <em>not</em> being implemented</a></h3>
+<p>A consequence of the fact that crates are permitted to add new impls is that Rust code cannot rely on impls <em>not</em> being implemented, since impls that don't exist today may come to exist in the future. The primary place that this comes up today is with coherence. Consider this example:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// In another crate `foo` that depends on `uint`:
+
+trait FooTrait { }
+impl&lt;T: uint::UnsignedInt&gt; FooTrait for T { }
+impl FooTrait for u128 { }
+<span class="boring">}
+</span></code></pre></pre>
+<p>At the moment, <code>uint</code> does not implement <code>UnsignedInt</code> for <code>u128</code>, so one could imagine that this code would compile. However, if we were to allow that, then the crate <code>foo</code> might be broken by some future release of <code>uint</code> which adds an impl for <code>u128</code>. In particular, that would cause there to be two overlapping impls for <code>FooTrait</code>, and this is not allowed. That is a problem, since adding a new impl is meant to be a non-breaking change. For this reason, Rust rejects the impls above, unless they appear within the crate <code>uint</code> itself (the idea is that, within the crate, if you were to add the new impl, you would get a compilation error locally).</p>
+<p>In the <code>foo</code> example, Rust's restriction makes sense. It seems <em>highly likely</em> that adding not having <code>u128</code> implement <code>UnsignedInt</code> was just an oversight. But other examples are less clear. Imagine this crate, <code>bar</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// In yet another crate `bar` that depends on `uint`:
+
+trait BarTrait { }
+impl&lt;T: uint::UnsignedInt&gt; BarTrait for T { }
+impl BarTrait for String { }
+<span class="boring">}
+</span></code></pre></pre>
+<p>Again, the compiler rejects this code, this time because it is concerned that some future release of <code>uint</code> might add an impl of <code>UnsignedInt</code> for <code>String</code> -- but that seems very unlikely to happen, since string is not an integer of any kind. (Although not <em>impossible</em> -- maybe we'd like to be able to treat <code>format!(&quot;123&quot;)</code> as an integer?) How are we to distinguish these two cases?</p>
+<h3 id="enter-negative-impls"><a class="header" href="#enter-negative-impls">Enter: Negative impls</a></h3>
+<p>The idea of negative impls is to make it possible for a crate to promise <em>not</em> to implement something. Given this extension, the <code>uint</code> crate could add an impl like the following:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// In uint v1.2:
+
+impl !UnsignedInt for String { }
+<span class="boring">}
+</span></code></pre></pre>
+<p>Once added, removing a negative impl is a breaking change, just as with a positive impl. Effectively, the negative impl is a promise by <code>uint</code> never to implement <code>UnsignedInt</code> for <code>String</code>. Given this negative impl, it is then fine for <code>bar</code> to add impls that rely on <code>String</code> not implementing <code>UnsignedInt</code>, so that example would compile.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="always-applicable-impls"><a class="header" href="#always-applicable-impls">Always applicable impls</a></h1>
+<p>The negaite</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="-rfc"><a class="header" href="#-rfc">✨ RFC</a></h1>
 <blockquote>
 <p>The RFC exists here in draft form. It will be edited and amended over the course of this initiative.
