@@ -76,7 +76,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item "><a href="index.html">👋 Welcome</a></li><li class="chapter-item "><a href="updates.html">✏️ Updates</a></li><li class="chapter-item "><a href="CHARTER.html">📜 Charter</a></li><li class="chapter-item "><a href="evaluation.html">🔬 Evaluation</a></li><li class="chapter-item "><a href="explainer.html">📚 Explainer</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="explainer/always-applicable.html">Always applicable impls</a></li></ol></li><li class="chapter-item "><a href="RFC.html">✨ RFC</a></li><li class="chapter-item "><a href="FAQ.html">😕 FAQ</a></li></ol>
+                <ol class="chapter"><li class="chapter-item "><a href="index.html">👋 Welcome</a></li><li class="chapter-item "><a href="updates.html">✏️ Updates</a></li><li class="chapter-item "><a href="CHARTER.html">📜 Charter</a></li><li class="chapter-item "><a href="evaluation.html">🔬 Evaluation</a></li><li class="chapter-item "><a href="explainer.html">📚 Explainer</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="explainer/coherence-check.html">Coherence check</a></li><li class="chapter-item "><a href="explainer/always-applicable.html">Always applicable impls</a></li></ol></li><li class="chapter-item "><a href="RFC.html">✨ RFC</a></li><li class="chapter-item "><a href="FAQ.html">😕 FAQ</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -331,8 +331,69 @@ impl !UnsignedInt for String { }
 <span class="boring">}
 </span></code></pre></pre>
 <p>Once added, removing a negative impl is a breaking change, just as with a positive impl. Effectively, the negative impl is a promise by <code>uint</code> never to implement <code>UnsignedInt</code> for <code>String</code>. Given this negative impl, it is then fine for <code>bar</code> to add impls that rely on <code>String</code> not implementing <code>UnsignedInt</code>, so that example would compile.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="coherence-check"><a class="header" href="#coherence-check">Coherence check</a></h1>
+<p>Coherence works in two parts. The first is the <em>orphan</em> check, which is unaffected by this RFC: the orphan check is the one that ensures that you only implement foreign traits for types that are local to your crate.</p>
+<p>The second part of the coherence check is the <em>overlap</em> check. The principle here is that if you have two impls <code>Impl1</code> and <code>Impl2</code> for some trait <code>Trait</code>, we wish to ensure that <code>Impl1</code> and <code>Impl2</code> cannot apply to the same set of inputs <code>P0: Trait&lt;P1...Pn&gt;</code>.</p>
+<h2 id="negative-of-a-where-clause"><a class="header" href="#negative-of-a-where-clause">Negative of a where clause</a></h2>
+<p>We define the negative of a where clause <code>Negative(WC)</code> as a partial function that converts <code>T: Trait</code> to <code>T: !Trait</code>:</p>
+<ul>
+<li><code>Negative(P0: Trait&lt;P1...Pn&gt;) = Some(P0: !Trait&lt;P1...Pn&gt;)</code></li>
+<li><code>Negative(for&lt;'a..'z&gt; P0: Trait&lt;P1...Pn&gt;) = Some(for&lt;'a..'z&gt; P0: !Trait&lt;P1...Pn&gt;)</code></li>
+<li><code>Negative(WC) = None</code>, otherwise</li>
+</ul>
+<h2 id="new-disjointness-rules"><a class="header" href="#new-disjointness-rules">New disjointness rules</a></h2>
+<p>The coherence check is extended with a new rule for determining when <code>Impl1</code> and <code>Impl2</code> are disjoint (the rule is applied twice for any pair <code>(A, B)</code> of impl, once with <code>A</code> as <code>Impl1</code> and once with <code>B</code> as <code>Impl1</code>). These rules are alternatives to the existing rule, which means that <em>any program that compiles today continues to compile</em>, but we will also consider <em>new</em> programs as passing the coherence check.</p>
+<p>In plain English, the idea is that we can consider <code>Impl1</code> and <code>Impl2</code> to be disjoint if whenever <code>Impl1</code> applies, some where clause in <code>Impl2</code> cannot hold (i.e., we can prove the negative of it) (and vice versa). </p>
+<ul>
+<li><code>Disjoint(Impl1, Impl2)</code> holds if, for some substitution S and some where clause WC on Impl2:
+<ul>
+<li><code>S(TraitRef(Impl2)) = TraitRef(Impl1)</code> -- there is some instantiation S of the Impl2 generics such that Impl1 and Impl2 apply to the same types</li>
+<li><code>Negative(S(WC)) is provable, given the environment of Impl1</code> -- we can prove the negative version of some where clase from Impl2</li>
+</ul>
+</li>
+</ul>
+<p>In operational terms:</p>
+<ul>
+<li><code>Disjoint(Impl1, Impl2)</code> if...
+<ul>
+<li>Instantiate <code>Impl1</code> with placeholders</li>
+<li>Instantiate <code>Impl2</code> with inference variables</li>
+<li>Equate all type parameters from <code>Impl1</code> and <code>Impl2</code></li>
+<li>There exists some where clause <code>WC</code> on <code>Impl2</code> where <code>negative(WC)</code> holds.</li>
+</ul>
+</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="always-applicable-impls"><a class="header" href="#always-applicable-impls">Always applicable impls</a></h1>
-<p>The negaite</p>
+<p>Like the <code>Drop</code> trait, negative impls are currently limited to being &quot;always applicable&quot;, which means that they must apply to <em>all</em> instances of a given type. As an example, consider the following type <code>Foo</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Foo&lt;T: Eq&gt; { t: T }
+<span class="boring">}
+</span></code></pre></pre>
+<p>It is legal to implement a negative trait for <code>Foo</code>, so long as it applies to all <code>T: Eq</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: Eq&gt; !Clone for Foo&lt;T&gt; { }
+<span class="boring">}
+</span></code></pre></pre>
+<p>It is not legal to implement a negative trait that only applies to some <code>T</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: Eq + Ord&gt; !Clone for Foo&lt;T&gt; { }
+<span class="boring">}
+</span></code></pre></pre>
+<h2 id="why-require-always-applicable"><a class="header" href="#why-require-always-applicable">Why require always applicable?</a></h2>
+<p>This rule is inspired by limitations of the current implementation, particularly when it comes to auto traits. In particular, the way that auto traits are currently implemented, negative impls always apply to all instances of the type. Therefore, this impl for example would actually mean that <code>Foo&lt;T&gt;</code> is never <code>Send</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: Eq + Ord&gt; !Send for Foo&lt;T&gt; { }
+<span class="boring">}
+</span></code></pre></pre>
+<p>Under the &quot;always applicable&quot; rule, this impl is simply illegal. Once the implementation for auto traits has improved, we could lift this rule.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="-rfc"><a class="header" href="#-rfc">✨ RFC</a></h1>
 <blockquote>
 <p>The RFC exists here in draft form. It will be edited and amended over the course of this initiative.

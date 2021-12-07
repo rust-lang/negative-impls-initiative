@@ -75,7 +75,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item "><a href="../index.html">👋 Welcome</a></li><li class="chapter-item "><a href="../updates.html">✏️ Updates</a></li><li class="chapter-item "><a href="../CHARTER.html">📜 Charter</a></li><li class="chapter-item "><a href="../evaluation.html">🔬 Evaluation</a></li><li class="chapter-item expanded "><a href="../explainer.html">📚 Explainer</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../explainer/always-applicable.html" class="active">Always applicable impls</a></li></ol></li><li class="chapter-item "><a href="../RFC.html">✨ RFC</a></li><li class="chapter-item "><a href="../FAQ.html">😕 FAQ</a></li></ol>
+                <ol class="chapter"><li class="chapter-item "><a href="../index.html">👋 Welcome</a></li><li class="chapter-item "><a href="../updates.html">✏️ Updates</a></li><li class="chapter-item "><a href="../CHARTER.html">📜 Charter</a></li><li class="chapter-item "><a href="../evaluation.html">🔬 Evaluation</a></li><li class="chapter-item expanded "><a href="../explainer.html">📚 Explainer</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../explainer/coherence-check.html">Coherence check</a></li><li class="chapter-item expanded "><a href="../explainer/always-applicable.html" class="active">Always applicable impls</a></li></ol></li><li class="chapter-item "><a href="../RFC.html">✨ RFC</a></li><li class="chapter-item "><a href="../FAQ.html">😕 FAQ</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -141,13 +141,42 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="always-applicable-impls"><a class="header" href="#always-applicable-impls">Always applicable impls</a></h1>
-<p>The negaite</p>
+<p>Like the <code>Drop</code> trait, negative impls are currently limited to being &quot;always applicable&quot;, which means that they must apply to <em>all</em> instances of a given type. As an example, consider the following type <code>Foo</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Foo&lt;T: Eq&gt; { t: T }
+<span class="boring">}
+</span></code></pre></pre>
+<p>It is legal to implement a negative trait for <code>Foo</code>, so long as it applies to all <code>T: Eq</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: Eq&gt; !Clone for Foo&lt;T&gt; { }
+<span class="boring">}
+</span></code></pre></pre>
+<p>It is not legal to implement a negative trait that only applies to some <code>T</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: Eq + Ord&gt; !Clone for Foo&lt;T&gt; { }
+<span class="boring">}
+</span></code></pre></pre>
+<h2 id="why-require-always-applicable"><a class="header" href="#why-require-always-applicable">Why require always applicable?</a></h2>
+<p>This rule is inspired by limitations of the current implementation, particularly when it comes to auto traits. In particular, the way that auto traits are currently implemented, negative impls always apply to all instances of the type. Therefore, this impl for example would actually mean that <code>Foo&lt;T&gt;</code> is never <code>Send</code>:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;T: Eq + Ord&gt; !Send for Foo&lt;T&gt; { }
+<span class="boring">}
+</span></code></pre></pre>
+<p>Under the &quot;always applicable&quot; rule, this impl is simply illegal. Once the implementation for auto traits has improved, we could lift this rule.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../explainer.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../explainer/coherence-check.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                             <a rel="next" href="../RFC.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
@@ -159,7 +188,7 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../explainer.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../explainer/coherence-check.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                     <a rel="next" href="../RFC.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
